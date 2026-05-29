@@ -30,6 +30,20 @@ namespace api_clase.Mappings
             // Mapeo de CreateUpdatePhoneDTO a Phone
             CreateMap<CreateUpdatePhoneDTO, Phone>()
                 .ForMember(dest => dest.IsActive, opt => opt.Ignore());
+
+            // Mapeo de Purchase a PurchaseDTO
+            // Los campos CustomerName, PhoneBrand, PhoneModel vienen de las relaciones
+            CreateMap<Purchase, PurchaseDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : string.Empty))
+                .ForMember(dest => dest.PhoneBrand, opt => opt.MapFrom(src => src.Phone != null ? src.Phone.Brand : string.Empty))
+                .ForMember(dest => dest.PhoneModel, opt => opt.MapFrom(src => src.Phone != null ? src.Phone.Model : string.Empty));
+
+            // Mapeo de CreatePurchaseDTO a Purchase
+            CreateMap<CreatePurchaseDTO, Purchase>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.Ignore())   // se calcula en el repositorio
+                .ForMember(dest => dest.PurchaseDate, opt => opt.Ignore()) // se asigna en el constructor
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.Ignore());
         }
     }
 }

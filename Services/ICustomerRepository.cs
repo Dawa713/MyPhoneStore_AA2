@@ -9,7 +9,8 @@ namespace api_clase.Services
     public interface ICustomerRepository
     {
         IEnumerable<Customer> GetAllActive();
-        Customer GetById(int id);
+        Customer? GetById(int id);
+        Customer? GetByEmail(string email);
         void Add(Customer customer);
         void Update(int id, Customer customerUpdate);
         void Delete(int id);

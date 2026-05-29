@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using api_clase.Models;
 using api_clase.Services;
@@ -8,6 +9,7 @@ namespace api_clase.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "ADMIN")] // Solo ADMIN puede gestionar clientes
     public class CustomersController : ControllerBase
     {
         // Inyección de dependencias: El servicio se inyecta a través del constructor

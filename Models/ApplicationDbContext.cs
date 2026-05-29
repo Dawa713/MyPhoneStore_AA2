@@ -13,6 +13,7 @@ namespace api_clase.Data
         // DbSets para las entidades
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Phone> Phones { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

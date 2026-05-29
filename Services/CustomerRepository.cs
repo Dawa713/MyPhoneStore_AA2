@@ -21,9 +21,14 @@ namespace api_clase.Services
             return _context.Customers.Where(c => c.IsActive).ToList();
         }
 
-        public Customer GetById(int id)
+        public Customer? GetById(int id)
         {
             return _context.Customers.FirstOrDefault(c => c.Id == id && c.IsActive);
+        }
+
+        public Customer? GetByEmail(string email)
+        {
+            return _context.Customers.FirstOrDefault(c => c.Email == email && c.IsActive);
         }
 
         public void Add(Customer customer)

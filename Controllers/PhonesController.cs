@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using api_clase.Models;
 using api_clase.Services;
@@ -48,8 +49,9 @@ namespace api_clase.Controllers
         }
 
         /// <summary>
-        /// POST: api/phones - Crea un nuevo teléfono
+        /// POST: api/phones - Crea un nuevo teléfono (solo ADMIN)
         /// </summary>
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
         public ActionResult<PhoneDTO> CreatePhone([FromBody] CreateUpdatePhoneDTO phoneDTO)
         {
@@ -66,8 +68,9 @@ namespace api_clase.Controllers
         }
 
         /// <summary>
-        /// PUT: api/phones/{id} - Actualiza un teléfono
+        /// PUT: api/phones/{id} - Actualiza un teléfono (solo ADMIN)
         /// </summary>
+        [Authorize(Roles = "ADMIN")]
         [HttpPut("{id}")]
         public IActionResult UpdatePhone(int id, [FromBody] CreateUpdatePhoneDTO phoneUpdateDTO)
         {
@@ -86,8 +89,9 @@ namespace api_clase.Controllers
         }
 
         /// <summary>
-        /// DELETE: api/phones/{id} - Desactiva un teléfono
+        /// DELETE: api/phones/{id} - Desactiva un teléfono (solo ADMIN)
         /// </summary>
+        [Authorize(Roles = "ADMIN")]
         [HttpDelete("{id}")]
         public IActionResult DeletePhone(int id)
         {
@@ -100,8 +104,9 @@ namespace api_clase.Controllers
         }
 
         /// <summary>
-        /// POST: api/phones/{id}/purchase - Compra un teléfono (reduce stock)
+        /// POST: api/phones/{id}/purchase - Compra un teléfono (usuarios autenticados)
         /// </summary>
+        [Authorize]
         [HttpPost("{id}/purchase")]
         public IActionResult PurchasePhone(int id, [FromBody] PurchaseRequestDTO purchaseRequest)
         {

@@ -9,8 +9,9 @@
 API REST completa desarrollada en **ASP.NET Core 10** que gestiona:
 - **👥 Clientes**: Registro, autenticación, actualización y eliminación
 - **📱 Teléfonos**: Catálogo de productos, stock, y compras
+- **🛍️ Compras**: Historial de compras con relación Cliente-Teléfono
 
-Implementa patrones profesionales como **Repository Pattern**, **DTOs**, **Inyección de Dependencias** y **Migraciones de BD**.
+Implementa patrones profesionales como **Repository Pattern**, **DTOs**, **Inyección de Dependencias**, **Autenticación JWT con roles** y **Migraciones de BD**.
 
 ---
 
@@ -81,10 +82,10 @@ Paso a paso para desplegar en K8s:
 
 ```
 aa2dwec/
-├── Controllers/                    # Endpoints (CustomersController, PhonesController)
-├── Models/                         # Entidades (Customer, Phone, ApplicationDbContext)
+├── Controllers/                    # Endpoints (Auth, Customers, Phones, Purchases)
+├── Models/                         # Entidades (Customer, Phone, Purchase, DbContext)
 ├── DTOs/                           # Data Transfer Objects (sin datos sensibles)
-├── Services/                       # Interfaces y Repositorios
+├── Services/                       # Interfaces y Repositorios + JwtService
 ├── Mappings/                       # Configuración de AutoMapper
 ├── Migrations/                     # Migraciones EF Core
 │
@@ -137,13 +138,31 @@ DELETE /api/customers/{id}         # Eliminar (soft delete)
 
 ### Teléfonos
 ```http
-GET    /api/phones                 # Listar todos
-GET    /api/phones/{id}            # Por ID
-POST   /api/phones                 # Crear
-PUT    /api/phones/{id}            # Actualizar
-DELETE /api/phones/{id}            # Eliminar
-POST   /api/phones/{id}/purchase   # Comprar (reducir stock)
-GET    /api/phones/search/byBrand  # Buscar por marca
+GET    /api/phones                        # Listar todos (público)
+GET    /api/phones/{id}                   # Por ID (público)
+POST   /api/phones                        # Crear [ADMIN]
+PUT    /api/phones/{id}                   # Actualizar [ADMIN]
+DELETE /api/phones/{id}                   # Eliminar [ADMIN]
+POST   /api/phones/{id}/purchase          # Comprar [autenticado]
+GET    /api/phones/search/byBrand         # Buscar por marca (público)
+GET    /api/phones/search/byPrice         # Buscar por precio (público)
+```
+
+### Autenticación
+```http
+POST   /api/auth/login             # Login → devuelve token JWT
+POST   /api/auth/register          # Registro de nuevo cliente
+```
+
+### Compras
+```http
+GET    /api/purchases                     # Todas las compras [ADMIN]
+GET    /api/purchases/{id}                # Por ID [autenticado]
+GET    /api/purchases/customer/{id}       # Compras de un cliente [autenticado]
+POST   /api/purchases                     # Crear compra [autenticado]
+PUT    /api/purchases/{id}/cancel         # Cancelar compra [autenticado]
+GET    /api/purchases/search/byStatus     # Filtrar por estado [autenticado]
+GET    /api/purchases/search/byDate       # Filtrar por fecha [autenticado]
 ```
 
 ---
@@ -260,9 +279,9 @@ A: El PVC mantiene datos. StatefulSet reinicia el pod automáticamente.
 
 ## 🌱 Próximas Mejoras (Futuro)
 
-- [ ] Autenticación JWT
+- [x] Autenticación JWT con roles (ADMIN/CLIENT)
 - [ ] Hash de contraseñas (bcrypt)
-- [ ] CORS configurado
+- [x] CORS configurado para Vue frontend
 - [ ] Paginación en listados
 - [ ] Caché Redis
 - [ ] Logging centralizado
@@ -322,7 +341,7 @@ git push origin feature/nueva-funcionalidad
 ## ✅ Checklist de Funcionalidad
 
 - [x] Base de datos con MariaDB
-- [x] Modelos y DTOs
+- [x] Modelos y DTOs (Customer, Phone, Purchase)
 - [x] Endpoints CRUD completos
 - [x] Migraciones y seeding
 - [x] Repository Pattern
@@ -333,6 +352,8 @@ git push origin feature/nueva-funcionalidad
 - [x] Docker
 - [x] Kubernetes
 - [x] Documentación completa
+- [x] Autenticación JWT con roles
+- [x] CORS para frontend Vue
 
 ---
 
