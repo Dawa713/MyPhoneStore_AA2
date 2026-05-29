@@ -49,18 +49,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// CORS: permite peticiones desde el frontend Vue (puerto 5173 por defecto en Vite)
+// CORS: permite peticiones desde el frontend Vue
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+        policy.WithOrigins(
+                  "http://localhost:5173",  // desarrollo Vite
+                  "http://localhost:3000",
+                  "http://localhost:80",    // Docker frontend
+                  "http://localhost"        // Docker frontend sin puerto
+              )
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
+
+// Aplicar migraciones automáticamente al arrancar (necesario en Docker)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

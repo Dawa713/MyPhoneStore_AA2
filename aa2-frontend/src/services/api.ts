@@ -1,8 +1,9 @@
 import axios from 'axios'
 import type { Phone, Customer, Purchase, AuthResponse, CreatePhoneDTO, CreatePurchaseDTO } from '@/types'
 
-// URL base de la API de C# - ajusta el puerto si cambia
-const BASE_URL = 'http://localhost:5149/api'
+// En desarrollo: http://localhost:5149/api
+// En Docker: VITE_API_URL=http://localhost:7959/api (definido en .env.production)
+const BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5149/api'
 
 // Instancia de axios con la URL base
 const http = axios.create({ baseURL: BASE_URL })

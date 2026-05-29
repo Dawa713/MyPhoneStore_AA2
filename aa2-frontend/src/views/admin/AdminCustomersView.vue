@@ -1,6 +1,7 @@
 <template>
   <div>
     <h2>Gestión de Clientes</h2>
+    <ConfirmDialog />
 
     <DataTable
       :value="customers"
@@ -45,6 +46,8 @@ import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from 'primevue/useconfirm'
 import { getCustomers } from '@/services/api'
 import type { Customer } from '@/types'
 import axios from 'axios'
@@ -52,6 +55,7 @@ import axios from 'axios'
 const customers = ref<Customer[]>([])
 const loading = ref(false)
 const toast = useToast()
+const confirm = useConfirm()
 
 async function load() {
   loading.value = true
@@ -65,18 +69,27 @@ async function load() {
   }
 }
 
-async function remove(id: number) {
-  if (!confirm('¿Desactivar este cliente?')) return
-  try {
-    const token = localStorage.getItem('token')
-    await axios.delete(`http://localhost:5149/api/customers/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    customers.value = customers.value.filter((c) => c.id !== id)
-    toast.add({ severity: 'info', summary: 'Desactivado', life: 3000 })
-  } catch (e: any) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.message ?? 'Error', life: 4000 })
-  }
+function remove(id: number) {
+  confirm.require({
+    message: '¿Seguro que quieres desactivar este cliente?',
+    header: 'Confirmar',
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Cancelar',
+    acceptLabel: 'Desactivar',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        const token = localStorage.getItem('token')
+        await axios.delete(`${import.meta.env.VITE_API_URL}/customers/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        customers.value = customers.value.filter((c) => c.id !== id)
+        toast.add({ severity: 'info', summary: 'Desactivado', life: 3000 })
+      } catch (e: any) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.message ?? 'Error', life: 4000 })
+      }
+    }
+  })
 }
 
 function formatDate(d: string) {

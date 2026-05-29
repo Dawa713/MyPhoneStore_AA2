@@ -1,6 +1,7 @@
 <template>
   <div>
     <h2>Gestión de Teléfonos</h2>
+    <ConfirmDialog />
 
     <!-- Formulario con VeeValidate -->
     <Card style="margin-bottom:2rem">
@@ -82,11 +83,14 @@ import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
+import ConfirmDialog from 'primevue/confirmdialog'
+import { useConfirm } from 'primevue/useconfirm'
 import { usePhonesStore } from '@/stores/phones'
 import type { Phone } from '@/types'
 
 const store = usePhonesStore()
 const toast = useToast()
+const confirm = useConfirm()
 const saving = ref(false)
 const editingId = ref<number | null>(null)
 
@@ -132,14 +136,23 @@ function resetForm() {
   resetVee()
 }
 
-async function remove(id: number) {
-  if (!confirm('¿Eliminar este teléfono?')) return
-  try {
-    await store.remove(id)
-    toast.add({ severity: 'info', summary: 'Eliminado', life: 3000 })
-  } catch (e: any) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.message ?? 'Error', life: 4000 })
-  }
+function remove(id: number) {
+  confirm.require({
+    message: '¿Seguro que quieres eliminar este teléfono?',
+    header: 'Confirmar eliminación',
+    icon: 'pi pi-exclamation-triangle',
+    rejectLabel: 'Cancelar',
+    acceptLabel: 'Eliminar',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        await store.remove(id)
+        toast.add({ severity: 'info', summary: 'Eliminado', life: 3000 })
+      } catch (e: any) {
+        toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.message ?? 'Error', life: 4000 })
+      }
+    }
+  })
 }
 
 onMounted(() => store.fetchAll())

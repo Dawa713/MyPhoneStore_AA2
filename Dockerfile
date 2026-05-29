@@ -1,41 +1,26 @@
-# Multi-stage build para optimizar imagen
-# Stage 1: Build
+# ── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copiar archivos de proyecto
 COPY ["api clase.csproj", "./"]
-
-# Restaurar dependencias
 RUN dotnet restore "api clase.csproj"
 
-# Copiar código fuente
-COPY . .
-
-# Compilar
-RUN dotnet build "api clase.csproj" -c Release -o /app/build
-
-# Publicar
+# Copiar todo excepto la carpeta del frontend (no es parte de la API)
+COPY --exclude=aa2-frontend . .
 RUN dotnet publish "api clase.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Stage 2: Runtime (imagen más pequeña)
+# ── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 
-# Copiar binarios compilados
 COPY --from=build /app/publish .
 
-# Exponer puerto
-EXPOSE 5000
-EXPOSE 5001
-
-# Variable de entorno
-ENV ASPNETCORE_URLS=http://+:5000
+# Puerto del contenedor de la API: 7959 (4 últimas cifras de usuario)
+EXPOSE 7959
+ENV ASPNETCORE_URLS=http://+:7959
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/swagger/index.html || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -f http://localhost:7959/swagger/index.html || exit 1
 
-# Ejecutar la aplicación
 ENTRYPOINT ["dotnet", "api clase.dll"]

@@ -1,6 +1,30 @@
-# 🛒 API REST de Tienda de Teléfonos
+# 📱 PhoneStore — API + Frontend
 
-**Proyecto de Desarrollo de Aplicaciones Web (2º DAW) - Entorno Servidor**
+**Proyecto DAW 2º - Entorno Servidor + Entorno Cliente**
+
+---
+
+## 🔑 Credenciales de prueba
+
+| Usuario | Email | Contraseña | Rol |
+|---------|-------|-----------|-----|
+| Juan Pérez | `juan@email.com` | `password123` | ADMIN |
+| María García | `maria@email.com` | `pass1234` | CLIENT |
+| Carlos López | `carlos@email.com` | `secure456` | CLIENT |
+
+---
+
+## 🐳 Lanzar con Docker (corrección)
+
+```bash
+git clone -b develop https://github.com/Dawa713/aa2dwec.git
+cd aa2dwec
+docker-compose build && docker-compose up
+```
+
+- **Frontend:** http://localhost
+- **API / Swagger:** http://localhost:7959/swagger
+- **Base de datos:** localhost:9597
 
 ---
 

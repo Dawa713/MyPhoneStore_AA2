@@ -1,0 +1,57 @@
+services:
+
+  # ── Base de datos MariaDB ─────────────────────────────────────────────────
+  mariadb:
+    image: mariadb:11
+    container_name: phonestore-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: mi_api_db
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: password123
+    ports:
+      # Puerto BD: 9597 (4 últimas cifras invertidas del usuario)
+      - "9597:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── API C# (ASP.NET Core) ────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phonestore-api
+    restart: unless-stopped
+    ports:
+      # Puerto API: 7959 (4 últimas cifras del usuario)
+      - "7959:7959"
+    environment:
+      # Sobreescribe la conexión para apuntar al contenedor de MariaDB
+      ConnectionStrings__DefaultConnection: "server=mariadb;port=3306;database=mi_api_db;user=usuario;password=password123;"
+      ASPNETCORE_URLS: "http://+:7959"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  # ── Frontend Vue (Nginx) ─────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./aa2-frontend
+      dockerfile: Dockerfile
+    container_name: phonestore-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  mariadb_data:
