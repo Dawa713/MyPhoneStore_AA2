@@ -26,6 +26,16 @@ docker-compose build && docker-compose up
 - **API / Swagger:** http://localhost:7959/swagger
 - **Base de datos:** localhost:9597
 
+> En PowerShell usar: `docker-compose build; docker-compose up`
+
+---
+
+## 📚 Documentación
+
+- [DEFENSA_API.md](./DEFENSA_API.md) — Guía de defensa de la API C# (requisitos, preguntas probables)
+- [DEFENSA_VUE.md](./DEFENSA_VUE.md) — Guía de defensa del frontend Vue 3
+- [DOCUMENTACION.md](./DOCUMENTACION.md) — Documentación técnica completa
+
 ---
 
 ## 📋 Descripción
