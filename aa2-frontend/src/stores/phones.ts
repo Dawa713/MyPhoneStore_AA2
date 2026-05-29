@@ -58,7 +58,7 @@ export const usePhonesStore = defineStore('phones', () => {
   async function edit(id: number, data: CreatePhoneDTO) {
     await updatePhone(id, data)
     const idx = phones.value.findIndex((p) => p.id === id)
-    if (idx !== -1) phones.value[idx] = { ...phones.value[idx], ...data }
+    if (idx !== -1) phones.value[idx] = { ...phones.value[idx], ...data } as Phone
   }
 
   async function remove(id: number) {
