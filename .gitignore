@@ -17,3 +17,7 @@ obj/
 
 # Otros
 node_modules/
+
+# Notas personales
+DEFENSA_API.md
+DEFENSA_VUE.md
