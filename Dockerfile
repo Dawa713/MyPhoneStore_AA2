@@ -15,12 +15,12 @@ WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Puerto del contenedor de la API: 7959 (4 últimas cifras de usuario)
-EXPOSE 7959
-ENV ASPNETCORE_URLS=http://+:7959
+# Puerto del contenedor de la API: 7859 (4 últimas cifras de usuario)
+EXPOSE 7859
+ENV ASPNETCORE_URLS=http://+:7859
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD curl -f http://localhost:7959/swagger/index.html || exit 1
+  CMD curl -f http://localhost:7859/swagger/index.html || exit 1
 
 ENTRYPOINT ["dotnet", "api clase.dll"]

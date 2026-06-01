@@ -30,7 +30,7 @@ docker-compose build; docker-compose up
 | Servicio | URL |
 |----------|-----|
 | Frontend | http://localhost |
-| API / Swagger | http://localhost:7959/swagger |
+| API / Swagger | http://localhost:7859/swagger |
 | Base de datos | localhost:9597 |
 
 ---
