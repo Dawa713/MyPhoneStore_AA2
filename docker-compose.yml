@@ -30,7 +30,7 @@ services:
     container_name: phonestore-api
     restart: unless-stopped
     ports:
-      # Puerto API: 7859 (4 últimas cifras del usuario)
+      # Puerto API: 7859 (4 últimas cifras del usuario modifico para no coincidir con la app de consola)
       - "7859:7859"
     environment:
       # Sobreescribe la conexión para apuntar al contenedor de MariaDB
