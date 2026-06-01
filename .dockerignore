@@ -40,3 +40,6 @@ DOCUMENTACION.md
 # Test
 test/
 Tests/
+
+# Frontend (tiene su propio Dockerfile)
+aa2-frontend/

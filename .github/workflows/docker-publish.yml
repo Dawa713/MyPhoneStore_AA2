@@ -1,6 +1,5 @@
 name: Build and Push to Docker Hub
 
-# Se ejecuta al hacer push en develop o main
 on:
   push:
     branches:
@@ -12,34 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código del repositorio
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Login en Docker Hub usando los secretos del repositorio
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Construir y publicar la imagen de la API
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: .
-          dockerfile: Dockerfile
+          file: Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/phonestore-api:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/phonestore-api:${{ github.sha }}
 
-      # 4. Construir y publicar la imagen del frontend
       - name: Build and push Frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./aa2-frontend
-          dockerfile: aa2-frontend/Dockerfile
+          file: aa2-frontend/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/phonestore-frontend:latest

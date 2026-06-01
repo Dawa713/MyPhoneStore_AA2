@@ -5,8 +5,8 @@ WORKDIR /src
 COPY ["api clase.csproj", "./"]
 RUN dotnet restore "api clase.csproj"
 
-# Copiar todo excepto la carpeta del frontend (no es parte de la API)
-COPY --exclude=aa2-frontend . .
+# Copiar código fuente (aa2-frontend se excluye via .dockerignore)
+COPY . .
 RUN dotnet publish "api clase.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
