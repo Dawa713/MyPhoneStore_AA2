@@ -117,22 +117,31 @@ npm run dev
 ## 📡 Endpoints principales
 
 ```
-POST   /api/auth/login              Obtener token JWT
-POST   /api/auth/register           Registrar cuenta
+POST   /api/auth/login                Obtener token JWT
+POST   /api/auth/register             Registrar cuenta
 
-GET    /api/phones                  Listar teléfonos (público)
-GET    /api/phones/search/byBrand   Buscar por marca (público)
-GET    /api/phones/search/byPrice   Buscar por precio (público)
-POST   /api/phones                  Crear teléfono [ADMIN]
-PUT    /api/phones/{id}             Actualizar teléfono [ADMIN]
-DELETE /api/phones/{id}             Eliminar teléfono [ADMIN]
+GET    /api/phones                    Listar teléfonos (público)
+GET    /api/phones/{id}               Teléfono por ID (público)
+GET    /api/phones/search/byBrand     Buscar por marca (público)
+GET    /api/phones/search/byPrice     Buscar por precio (público)
+POST   /api/phones                    Crear teléfono [ADMIN]
+PUT    /api/phones/{id}               Actualizar teléfono [ADMIN]
+DELETE /api/phones/{id}               Baja lógica de teléfono [ADMIN]
+POST   /api/phones/{id}/purchase      Comprar teléfono [autenticado]
 
-GET    /api/purchases               Todas las compras [ADMIN]
-POST   /api/purchases               Crear compra [autenticado]
-GET    /api/purchases/customer/{id} Mis compras [autenticado]
-PUT    /api/purchases/{id}/cancel   Cancelar compra [autenticado]
+GET    /api/purchases                 Todas las compras [ADMIN]
+GET    /api/purchases/{id}            Compra por ID [autenticado]
+GET    /api/purchases/customer/{id}   Compras de un cliente [autenticado]
+GET    /api/purchases/search/byStatus Filtrar por estado [autenticado]
+GET    /api/purchases/search/byDate   Filtrar por rango de fechas [autenticado]
+POST   /api/purchases                 Crear compra [autenticado]
+PUT    /api/purchases/{id}/cancel     Cancelar compra (devuelve stock) [autenticado]
 
-GET    /api/customers               Listar clientes [ADMIN]
+GET    /api/customers                 Listar clientes [ADMIN]
+GET    /api/customers/{id}            Cliente por ID [ADMIN]
+POST   /api/customers                 Crear cliente [ADMIN]
+PUT    /api/customers/{id}            Actualizar cliente [ADMIN]
+DELETE /api/customers/{id}            Baja lógica de cliente [ADMIN]
 ```
 
 ---
