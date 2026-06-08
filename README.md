@@ -35,6 +35,80 @@ docker-compose build; docker-compose up
 
 ---
 
+## 🐙 Lanzar desde Docker Hub (sin clonar el repo)
+
+Las imágenes se publican automáticamente en Docker Hub mediante CI/CD (GitHub Actions) en cada push a `develop` o `main`. Puedes lanzar la aplicación completa sin tener el código fuente:
+
+📦 [hub.docker.com/u/a27959svalero](https://hub.docker.com/u/a27959svalero)
+
+```bash
+# 1. Crea un archivo docker-compose.yml con este contenido:
+```
+
+```yaml
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: phonestore-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: mi_api_db
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: password123
+    ports:
+      - "9597:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  api:
+    image: a27959svalero/phonestore-api:latest
+    container_name: phonestore-api
+    restart: unless-stopped
+    ports:
+      - "7859:7859"
+    environment:
+      ConnectionStrings__DefaultConnection: "server=mariadb;port=3306;database=mi_api_db;user=usuario;password=password123;"
+      ASPNETCORE_URLS: "http://+:7859"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  frontend:
+    image: a27959svalero/phonestore-frontend:latest
+    container_name: phonestore-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  mariadb_data:
+```
+
+```bash
+# 2. Descarga las imágenes y levanta los contenedores
+docker-compose pull
+docker-compose up
+
+# Windows PowerShell (un solo comando)
+docker-compose pull; docker-compose up
+```
+
+La diferencia con el método anterior es que aquí no se compila nada: Docker descarga las imágenes ya construidas (`image:`) en lugar de construirlas localmente (`build:`). Es la forma más rápida de probar la aplicación sin clonar el repositorio ni tener .NET o Node instalados.
+
+Las URLs de acceso son las mismas que en la tabla anterior.
+
+---
+
 ## 📋 Descripción
 
 **PhoneStore** es una tienda de teléfonos móviles con API REST y frontend Vue 3.
