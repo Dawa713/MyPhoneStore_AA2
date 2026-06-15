@@ -5,7 +5,6 @@ using api_clase.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,33 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
                      ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    // Botón Authorize en Swagger para JWT
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Introduce el token JWT. Ejemplo: eyJhbGc..."
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddSwaggerGen();
 
 // Registrar los servicios (Inyección de Dependencias)
 // Scoped: Una instancia por cada request HTTP
@@ -101,6 +74,33 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+// Middleware: inyecta el esquema Bearer JWT en el swagger.json generado.
+// Usa System.Text.Json puro para evitar incompatibilidades con Microsoft.OpenApi.Models v2.
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Path.StartsWithSegments("/swagger/v1/swagger.json"))
+    {
+        await next(context);
+        return;
+    }
+
+    var originalBody = context.Response.Body;
+    using var buffer = new MemoryStream();
+    context.Response.Body = buffer;
+
+    await next(context);
+
+    buffer.Position = 0;
+    var originalJson = await new StreamReader(buffer).ReadToEndAsync();
+    var modified = InjectJwtSecurityScheme(originalJson);
+    var modifiedBytes = Encoding.UTF8.GetBytes(modified);
+
+    context.Response.Body = originalBody;
+    context.Response.Headers.Remove("Content-Length");
+    context.Response.ContentLength = modifiedBytes.Length;
+    await context.Response.Body.WriteAsync(modifiedBytes);
+});
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -112,3 +112,70 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Inyecta securitySchemes Bearer en el JSON de Swagger (sin tipos Microsoft.OpenApi.Models)
+static string InjectJwtSecurityScheme(string json)
+{
+    using var doc = System.Text.Json.JsonDocument.Parse(json);
+    var root = doc.RootElement;
+    bool hasComponents = root.TryGetProperty("components", out _);
+
+    using var ms = new MemoryStream();
+    using var w = new System.Text.Json.Utf8JsonWriter(ms);
+    w.WriteStartObject();
+
+    foreach (var prop in root.EnumerateObject())
+    {
+        if (prop.Name == "components")
+        {
+            w.WritePropertyName("components");
+            w.WriteStartObject();
+            foreach (var cp in prop.Value.EnumerateObject())
+                cp.WriteTo(w);
+            WriteBearerScheme(w);
+            w.WriteEndObject();
+        }
+        else if (prop.Name == "paths")
+        {
+            if (!hasComponents)
+            {
+                w.WritePropertyName("components");
+                w.WriteStartObject();
+                WriteBearerScheme(w);
+                w.WriteEndObject();
+
+                w.WritePropertyName("security");
+                w.WriteStartArray();
+                w.WriteStartObject();
+                w.WritePropertyName("Bearer");
+                w.WriteStartArray();
+                w.WriteEndArray();
+                w.WriteEndObject();
+                w.WriteEndArray();
+            }
+            prop.WriteTo(w);
+        }
+        else
+        {
+            prop.WriteTo(w);
+        }
+    }
+
+    w.WriteEndObject();
+    w.Flush();
+    return Encoding.UTF8.GetString(ms.ToArray());
+}
+
+static void WriteBearerScheme(System.Text.Json.Utf8JsonWriter w)
+{
+    w.WritePropertyName("securitySchemes");
+    w.WriteStartObject();
+    w.WritePropertyName("Bearer");
+    w.WriteStartObject();
+    w.WriteString("type", "http");
+    w.WriteString("scheme", "bearer");
+    w.WriteString("bearerFormat", "JWT");
+    w.WriteString("description", "Token JWT. Obtenerlo en POST /api/auth/login");
+    w.WriteEndObject();
+    w.WriteEndObject();
+}
