@@ -119,6 +119,7 @@ static string InjectJwtSecurityScheme(string json)
     using var doc = System.Text.Json.JsonDocument.Parse(json);
     var root = doc.RootElement;
     bool hasComponents = root.TryGetProperty("components", out _);
+    bool hasSecurity = root.TryGetProperty("security", out _);
 
     using var ms = new MemoryStream();
     using var w = new System.Text.Json.Utf8JsonWriter(ms);
@@ -135,30 +136,37 @@ static string InjectJwtSecurityScheme(string json)
             WriteBearerScheme(w);
             w.WriteEndObject();
         }
-        else if (prop.Name == "paths")
+        else if (prop.Name == "security")
         {
-            if (!hasComponents)
+            // Ya había un security global definido; lo dejamos igual.
+            prop.WriteTo(w);
+        }
+        else
+        {
+            if (prop.Name == "paths" && !hasComponents)
             {
                 w.WritePropertyName("components");
                 w.WriteStartObject();
                 WriteBearerScheme(w);
                 w.WriteEndObject();
-
-                w.WritePropertyName("security");
-                w.WriteStartArray();
-                w.WriteStartObject();
-                w.WritePropertyName("Bearer");
-                w.WriteStartArray();
-                w.WriteEndArray();
-                w.WriteEndObject();
-                w.WriteEndArray();
             }
             prop.WriteTo(w);
         }
-        else
-        {
-            prop.WriteTo(w);
-        }
+    }
+
+    // El requirement global de seguridad debe añadirse SIEMPRE que no existiera ya,
+    // independientemente de si "components" ya existía (Swashbuckle siempre genera
+    // components.schemas por los DTOs, así que sin esto Swagger nunca adjuntaba el header).
+    if (!hasSecurity)
+    {
+        w.WritePropertyName("security");
+        w.WriteStartArray();
+        w.WriteStartObject();
+        w.WritePropertyName("Bearer");
+        w.WriteStartArray();
+        w.WriteEndArray();
+        w.WriteEndObject();
+        w.WriteEndArray();
     }
 
     w.WriteEndObject();
